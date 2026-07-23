@@ -25,7 +25,10 @@ public class MapScr : MonoBehaviour
             {
                 GameObject newCell = Instantiate(cell, new Vector3(x, 0, y), Quaternion.identity);
 
-                cells.Add(newCell.GetComponent<CellScr>());
+                CellScr cellScr = newCell.GetComponent<CellScr>();
+                cellScr.gridPosition = new Vector2Int(x, y);
+
+                cells.Add(cellScr);
             }
         }
     }

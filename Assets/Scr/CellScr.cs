@@ -1,8 +1,11 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class CellScr : MonoBehaviour
 {
     public IBuilding buld;
+    public Vector2Int gridPosition;
 
     public bool IsEmpty => buld == null;
 
@@ -23,5 +26,17 @@ public class CellScr : MonoBehaviour
     public void RemoveBuld()
     {
         buld = null;
+    }
+    [CustomEditor(typeof(CellScr))]
+    public class CellScrEditor : Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            DrawDefaultInspector();
+
+            CellScr cell = (CellScr)target;
+            string buildingName = cell.buld != null ? cell.buld.GetType().Name : "Порожньо";
+            EditorGUILayout.LabelField("Поточна будівля (runtime)", buildingName);
+        }
     }
 }
