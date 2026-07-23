@@ -6,6 +6,7 @@ public interface IProduct
 {
 
 }
+
 public interface IBuilding
 {
 
@@ -30,6 +31,19 @@ public class WorkshopClass : IBuilding
     public ProductType[] equipment;
     public ManufacturingClass need;
     public ManufacturingClass demand;
+}
+
+[System.Serializable]
+public class WarehouseClass : IBuilding
+{
+    public int capacity;
+    public List<IProduct> storedProducts = new List<IProduct>();
+}
+
+[System.Serializable]
+public class DevelopmentClass : IBuilding
+{
+    public List<ClothingType> unlockedVariants = new List<ClothingType>();
 }
 
 public class ManufacturingClass
