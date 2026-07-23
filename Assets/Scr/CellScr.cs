@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class CellScr : MonoBehaviour
 {
-    public WorkshopClass buld;
+    public IBuilding buld;
 
-    public void SelectBuld(WorkshopClass buld)
+    public void SelectBuld(IBuilding buld)
     {
 
     }

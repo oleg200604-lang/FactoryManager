@@ -5,7 +5,7 @@ using UnityEngine;
 public class CameraScr : MonoBehaviour
 {
     [SerializeField] private Camera mainCamera;
-    private WorkshopClass selectedBuld;
+    private IBuilding selectedBuld;
     public float moveSpeed = 5f;
     public float zoomSpeed = 5f;
     public float minZoom = 5f;
@@ -54,9 +54,6 @@ public class CameraScr : MonoBehaviour
 
     public void SetSelectedBuld(BuildingType buld)
     {
-        if ()
-        {
-           selectedBuld = workshop;
-        }
+
     }
 }
