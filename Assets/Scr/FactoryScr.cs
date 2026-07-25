@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class FactoryScr : MonoBehaviour
 {
-    public IProduct[] storage;
-    public IBuilding[] buildings;
+    public List<IProduct> storage;
+    public List<IBuilding> buildings;
     public List<ZoneClass> zones = new List<ZoneClass>();
 
     public bool IsCellInAnyZone(CellScr cell)

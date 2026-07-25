@@ -23,6 +23,10 @@ public enum ProductType
 {
     None, Product, Resource
 }
+public enum ResourceType
+{
+    None, Machines, Fabrics
+}
 public enum ClothingType
 {
     None, Casual, Formal, Swimwear, Work, Winter
@@ -59,12 +63,15 @@ public class ManufacturingClass
 public class RawClass : IProduct
 {
     public ProductType productType;
+    public ResourceType resourceType;
     public int quality;
 }
 
 public class ClothingClass : IProduct
 {
+    public ProductType productType;
     public ClothingType clothingType;
+    public IProduct need;
     public int quality;
     public int design;
 }
