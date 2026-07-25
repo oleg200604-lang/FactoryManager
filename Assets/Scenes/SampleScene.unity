@@ -419,6 +419,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   zones: []
+  timeScr: {fileID: 1905986936}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,6 +7,26 @@ public class FactoryScr : MonoBehaviour
     public List<IBuilding> buildings;
     public List<ZoneClass> zones = new List<ZoneClass>();
 
+    [SerializeField] private TimeScr timeScr;
+
+    private void OnEnable()
+    {
+        if (timeScr != null)
+        {
+            timeScr.OnNewDay += ProcessProduction;
+            timeScr.OnNewMonth += LogStorageSummary;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (timeScr != null)
+        {
+            timeScr.OnNewDay -= ProcessProduction;
+            timeScr.OnNewMonth -= LogStorageSummary;
+        }
+    }
+
     public bool IsCellInAnyZone(CellScr cell)
     {
         foreach (ZoneClass zone in zones)
@@ -23,6 +43,61 @@ public class FactoryScr : MonoBehaviour
 
         zones.Add(zone);
         Debug.Log($"Зону типу {zone.type} з {zone.cells.Count} клітинок додано до FactoryScr.");
+    }
+
+    private void ProcessProduction()
+    {
+        foreach (ZoneClass zone in zones)
+        {
+            if (zone.type != ZoneType.Workshop) continue;
+
+            foreach (CellScr cell in zone.cells)
+            {
+                if (cell.buld is WorkshopClass workshop)
+                {
+                    workshop.ProcessDay(zone, storage);
+                }
+            }
+        }
+    }
+
+    private void LogStorageSummary()
+    {
+        Debug.Log($"Склад: {storage.Count} товар(ів).");
+    }
+
+    [ContextMenu("Тест: Налаштувати тестове виробництво")]
+    private void SetupTestProduction()
+    {
+        foreach (ZoneClass zone in zones)
+        {
+            if (zone.type != ZoneType.Workshop) continue;
+
+            foreach (CellScr cell in zone.cells)
+            {
+                if (cell.buld is WorkshopClass workshop)
+                {
+                    workshop.need = new ManufacturingClass
+                    {
+                        product = new RawClass { resourceType = ResourceType.Fabrics, quality = 1 },
+                        manufacturing = 0
+                    };
+
+                    workshop.demand = new ManufacturingClass
+                    {
+                        product = new ClothingClass { clothingType = ClothingType.Casual, complexity = 3, quality = 1 },
+                        manufacturing = 0
+                    };
+
+                    zone.TryAddMaterial(new RawClass { resourceType = ResourceType.Fabrics, quality = 1 });
+
+                    Debug.Log("Тестове виробництво налаштовано.");
+                    return;
+                }
+            }
+        }
+
+        Debug.Log("Не знайдено жодної майстерні у зонах типу Workshop.");
     }
 }
 
