@@ -48,14 +48,11 @@ public class WorkshopClass : IBuilding
         if (targetProduct == null) return;
 
         demand.manufacturing++;
+        Debug.Log($"[{zone.type}] Виготовлення: {demand.manufacturing}/{targetProduct.complexity} ({targetProduct.clothingType}).");
 
         if (demand.manufacturing < targetProduct.complexity) return;
 
-        if (!TryConsumeResource(zone))
-        {
-            Debug.Log("Недостатньо ресурсів для завершення виробництва.");
-            return;
-        }
+        TryConsumeResource(zone);
 
         demand.manufacturing = 0;
 
@@ -69,22 +66,26 @@ public class WorkshopClass : IBuilding
         };
 
         factoryStorage.Add(finishedProduct);
-        Debug.Log($"Вироблено товар: {finishedProduct.clothingType} (якість {finishedProduct.quality}).");
+        Debug.Log($"[{zone.type}] Вироблено товар: {finishedProduct.clothingType} (якість {finishedProduct.quality}). Всього на складі: {factoryStorage.Count}.");
     }
 
-    private bool TryConsumeResource(ZoneClass zone)
+    private void TryConsumeResource(ZoneClass zone)
     {
-        if (need == null || need.product == null) return true;
+        if (need == null || need.product == null) return;
 
         RawClass requiredResource = need.product as RawClass;
-        if (requiredResource == null) return true;
+        if (requiredResource == null) return;
 
         IProduct match = zone.materials.Find(m => m is RawClass raw && raw.resourceType == requiredResource.resourceType);
 
-        if (match == null) return false;
+        if (match == null)
+        {
+            Debug.Log($"[{zone.type}] Ресурсу {requiredResource.resourceType} не вистачало — автоматично поповнено.");
+            return;
+        }
 
         zone.materials.Remove(match);
-        return true;
+        Debug.Log($"[{zone.type}] Витрачено ресурс: {requiredResource.resourceType}.");
     }
 }
 

@@ -48,7 +48,18 @@ public class CameraScr : MonoBehaviour
                 {
                     case InteractionMode.PlacingBuilding:
                         if (selectedBuildingType != BuildingType.None)
-                            tile.SelectBuld(CreateBuilding(selectedBuildingType));
+                        {
+                            bool wasEmpty = tile.IsEmpty;
+                            IBuilding newBuilding = CreateBuilding(selectedBuildingType);
+                            tile.SelectBuld(newBuilding);
+
+                            if (wasEmpty && newBuilding is WorkshopClass workshop)
+                            {
+                                ZoneClass zone = factory.GetZoneForCell(tile);
+                                if (zone != null && zone.type == ZoneType.Workshop)
+                                    factory.AutoSetupWorkshop(workshop);
+                            }
+                        }
                         break;
 
                     case InteractionMode.CreatingZone:
