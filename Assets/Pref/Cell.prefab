@@ -129,6 +129,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08bae2c634b28b04a82393478535f0a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gridPosition: {x: 0, y: 0}
+  cellRenderer: {fileID: 1579631890855279550}
 --- !u!65 &4351784647670289153
 BoxCollider:
   m_ObjectHideFlags: 0

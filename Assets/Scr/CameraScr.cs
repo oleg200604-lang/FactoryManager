@@ -17,6 +17,7 @@ public class CameraScr : MonoBehaviour
 
     private BuildingType selectedBuildingType = BuildingType.None;
     private InteractionMode currentMode = InteractionMode.None;
+    private ZoneType pendingZoneType = ZoneType.None;
     private CellScr zoneStartCell;
 
     public float moveSpeed = 5f;
@@ -60,30 +61,10 @@ public class CameraScr : MonoBehaviour
 
     // --- Розміщення будівель ---
 
-    private void SelectWorkshop()  
-    { 
-        SetSelectedBuld(BuildingType.Workshopm); 
-    }
-
-    private void SelectWarehouse() 
+    public void SetSelectedBuld(int buildingId)
     {
-        SetSelectedBuld(BuildingType.Composition); 
-    }
-
-    private void SelectDevelopmentCenter() 
-    { 
-        SetSelectedBuld(BuildingType.Development); 
-    }
-
-    private void DeselectBuilding() 
-    { 
-        SetSelectedBuld(BuildingType.None); 
-    }
-
-    public void SetSelectedBuld(BuildingType buld)
-    {
-        selectedBuildingType = buld;
-        currentMode = buld == BuildingType.None ? InteractionMode.None : InteractionMode.PlacingBuilding;
+        selectedBuildingType = (BuildingType)buildingId;
+        currentMode = selectedBuildingType == BuildingType.None ? InteractionMode.None : InteractionMode.PlacingBuilding;
     }
 
     private IBuilding CreateBuilding(BuildingType type)
@@ -99,17 +80,26 @@ public class CameraScr : MonoBehaviour
 
     // --- Створення зон ---
 
-    public void StartZoneCreation()
+    public void StartZoneCreation(int specialization)
     {
+        pendingZoneType = (ZoneType)specialization;
+
+        if (pendingZoneType == ZoneType.None)
+        {
+            Debug.Log("Невірна спеціалізація зони.");
+            return;
+        }
+
         currentMode = InteractionMode.CreatingZone;
         zoneStartCell = null;
-        Debug.Log("Режим створення зони увімкнено. Вибери точку A.");
+        Debug.Log($"Режим створення зони '{pendingZoneType}' увімкнено. Вибери точку A.");
     }
 
     public void CancelZoneCreation()
     {
         currentMode = InteractionMode.None;
         zoneStartCell = null;
+        pendingZoneType = ZoneType.None;
     }
 
     private void HandleZoneClick(CellScr clickedCell)
@@ -121,16 +111,34 @@ public class CameraScr : MonoBehaviour
             return;
         }
 
-        ZoneClass newZone = CreateZone(zoneStartCell, clickedCell);
+        List<CellScr> candidateCells = GetCellsBetween(zoneStartCell, clickedCell);
+
+        if (IsOverlappingExistingZone(candidateCells))
+        {
+            Debug.Log("Ця зона перетинається з уже існуючою. Будівництво скасовано.");
+            zoneStartCell = null;
+            currentMode = InteractionMode.None;
+            pendingZoneType = ZoneType.None;
+            return;
+        }
+
+        ZoneClass newZone = new ZoneClass
+        {
+            type = pendingZoneType,
+            cells = candidateCells
+        };
+
         factory.RegisterZone(newZone);
+        HighlightZone(newZone);
 
         zoneStartCell = null;
         currentMode = InteractionMode.None;
+        pendingZoneType = ZoneType.None;
     }
 
-    private ZoneClass CreateZone(CellScr pointA, CellScr pointB)
+    private List<CellScr> GetCellsBetween(CellScr pointA, CellScr pointB)
     {
-        ZoneClass zone = new ZoneClass();
+        List<CellScr> result = new List<CellScr>();
 
         int minX = Mathf.Min(pointA.gridPosition.x, pointB.gridPosition.x);
         int maxX = Mathf.Max(pointA.gridPosition.x, pointB.gridPosition.x);
@@ -142,11 +150,43 @@ public class CameraScr : MonoBehaviour
             if (cell.gridPosition.x >= minX && cell.gridPosition.x <= maxX &&
                 cell.gridPosition.y >= minY && cell.gridPosition.y <= maxY)
             {
-                zone.cells.Add(cell);
+                result.Add(cell);
             }
         }
 
-        return zone;
+        return result;
+    }
+
+    private bool IsOverlappingExistingZone(List<CellScr> candidateCells)
+    {
+        foreach (CellScr cell in candidateCells)
+        {
+            if (factory.IsCellInAnyZone(cell))
+                return true;
+        }
+
+        return false;
+    }
+
+    private void HighlightZone(ZoneClass zone)
+    {
+        Color zoneColor = GetZoneColor(zone.type);
+
+        foreach (CellScr cell in zone.cells)
+        {
+            cell.SetHighlight(zoneColor);
+        }
+    }
+
+    private Color GetZoneColor(ZoneType type)
+    {
+        switch (type)
+        {
+            case ZoneType.Workshop: return new Color(1f, 0.6f, 0.2f);
+            case ZoneType.Warehouse: return new Color(0.2f, 0.6f, 1f);
+            case ZoneType.Development: return new Color(0.6f, 1f, 0.4f);
+            default: return Color.white;
+        }
     }
 
     private void HandleMovement()

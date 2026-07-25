@@ -7,7 +7,15 @@ public class CellScr : MonoBehaviour
     public IBuilding buld;
     public Vector2Int gridPosition;
 
+    [SerializeField] private Renderer cellRenderer;
+
     public bool IsEmpty => buld == null;
+
+    private void Awake()
+    {
+        if (cellRenderer == null)
+            cellRenderer = GetComponent<Renderer>();
+    }
 
     public void SelectBuld(IBuilding newBuld)
     {
@@ -27,16 +35,15 @@ public class CellScr : MonoBehaviour
     {
         buld = null;
     }
-    [CustomEditor(typeof(CellScr))]
-    public class CellScrEditor : Editor
-    {
-        public override void OnInspectorGUI()
-        {
-            DrawDefaultInspector();
 
-            CellScr cell = (CellScr)target;
-            string buildingName = cell.buld != null ? cell.buld.GetType().Name : "Порожньо";
-            EditorGUILayout.LabelField("Поточна будівля (runtime)", buildingName);
-        }
+    public void SetHighlight(Color color)
+    {
+        if (cellRenderer != null)
+            cellRenderer.material.color = color;
+    }
+
+    public void ClearHighlight()
+    {
+        SetHighlight(Color.white);
     }
 }

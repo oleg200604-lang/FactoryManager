@@ -11,6 +11,10 @@ public interface IBuilding
 {
 
 }
+public enum ZoneType
+{
+    None, Workshop, Warehouse, Development
+}
 public enum BuildingType
 {
     None, Workshopm, Composition, Development
