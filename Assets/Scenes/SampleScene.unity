@@ -418,8 +418,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 697c4d2c83f540d45b98908ec31691c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  storage: []
+  buildings: []
   zones: []
   timeScr: {fileID: 1905986936}
+  references:
+    version: 2
+    RefIds: []
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

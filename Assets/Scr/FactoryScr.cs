@@ -3,8 +3,12 @@ using UnityEngine;
 
 public class FactoryScr : MonoBehaviour
 {
-    public List<IProduct> storage = new List<IProduct>();
+    [SerializeReference, TypeSelector(typeof(IProduct))]
+    public List<IProduct> storageProduct = new List<IProduct>();
+    public List<int> storage;
+    [SerializeReference, TypeSelector(typeof(IBuilding))]
     public List<IBuilding> buildings = new List<IBuilding>();
+
     public List<ZoneClass> zones = new List<ZoneClass>();
 
     [SerializeField] private TimeScr timeScr;
@@ -87,14 +91,14 @@ public class FactoryScr : MonoBehaviour
             foreach (CellScr cell in zone.cells)
             {
                 if (cell.buld is WorkshopClass workshop)
-                    workshop.ProcessDay(zone, storage);
+                    workshop.ProcessDay(zone, storageProduct);
             }
         }
     }
 
     private void LogStorageSummary()
     {
-        if (storage.Count == 0)
+        if (storageProduct.Count == 0)
         {
             Debug.Log("Склад: порожньо.");
             return;
@@ -102,31 +106,20 @@ public class FactoryScr : MonoBehaviour
 
         Dictionary<string, int> counts = new Dictionary<string, int>();
 
-        foreach (IProduct product in storage)
+        foreach (IProduct product in storageProduct)
         {
-            string label = DescribeProduct(product);
+            string label = product.Describe();
             counts.TryGetValue(label, out int current);
             counts[label] = current + 1;
         }
 
-        string summary = $"Склад ({storage.Count} товар(ів)):";
+        string summary = $"Склад ({storageProduct.Count} товар(ів)):";
         foreach (var pair in counts)
         {
             summary += $"\n— {pair.Key}: {pair.Value}";
         }
 
         Debug.Log(summary);
-    }
-
-    private string DescribeProduct(IProduct product)
-    {
-        if (product is ClothingClass clothing)
-            return $"{clothing.clothingType} (якість {clothing.quality})";
-
-        if (product is RawClass raw)
-            return $"{raw.resourceType} (якість {raw.quality})";
-
-        return product.GetType().Name;
     }
 }
 
@@ -135,6 +128,8 @@ public class ZoneClass
 {
     public ZoneType type;
     public List<CellScr> cells = new List<CellScr>();
+
+    [SerializeReference, TypeSelector(typeof(IProduct))]
     public List<IProduct> materials = new List<IProduct>();
 
     public bool TryAddMaterial(IProduct product)

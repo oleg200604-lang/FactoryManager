@@ -1,9 +1,8 @@
-﻿using UnityEditor;
-using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
+﻿using UnityEngine;
 
 public class CellScr : MonoBehaviour
 {
+    [SerializeReference, TypeSelector(typeof(IBuilding))]
     public IBuilding buld;
     public Vector2Int gridPosition;
 

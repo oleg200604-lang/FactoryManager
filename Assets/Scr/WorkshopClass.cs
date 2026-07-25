@@ -4,7 +4,7 @@ using UnityEngine;
 
 public interface IProduct
 {
-
+    string Describe();
 }
 
 public interface IBuilding
@@ -93,6 +93,8 @@ public class WorkshopClass : IBuilding
 public class WarehouseClass : IBuilding
 {
     public int capacity;
+
+    [SerializeReference, TypeSelector(typeof(IProduct))]
     public List<IProduct> storedProducts = new List<IProduct>();
 }
 
@@ -102,25 +104,35 @@ public class DevelopmentClass : IBuilding
     public List<ClothingType> unlockedVariants = new List<ClothingType>();
 }
 
+[System.Serializable]
 public class ManufacturingClass
 {
+    [SerializeReference, TypeSelector(typeof(IProduct))]
     public IProduct product;
     public int manufacturing;
-
 }
+
+[System.Serializable]
 public class RawClass : IProduct
 {
     public ProductType productType;
     public ResourceType resourceType;
     public int quality;
+
+    public string Describe() => $"{resourceType} (сировина, якість {quality})";
 }
 
+[System.Serializable]
 public class ClothingClass : IProduct
 {
     public ProductType productType;
     public ClothingType clothingType;
+
+    [SerializeReference, TypeSelector(typeof(IProduct))]
     public IProduct need;
     public int quality;
     public int design;
     public int complexity;
+
+    public string Describe() => $"{clothingType} (одяг, якість {quality})";
 }
