@@ -418,10 +418,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 697c4d2c83f540d45b98908ec31691c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  storageProduct: []
-  storage: 
-  buildings:
-  - rid: 2794409377395376131
+  storage:
+    baseCapacity: 20
+    products:
+    - rid: -2
+    - rid: -2
   zones: []
   timeScr: {fileID: 1905986936}
   references:
@@ -429,19 +430,6 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 2794409377395376131
-      type: {class: WorkshopClass, ns: , asm: Assembly-CSharp}
-      data:
-        quality: 0
-        equipment: 
-        need:
-          product:
-            rid: -2
-          manufacturing: 0
-        demand:
-          product:
-            rid: -2
-          manufacturing: 0
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
