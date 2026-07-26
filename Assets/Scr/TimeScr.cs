@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class TimeScr : MonoBehaviour
@@ -43,9 +41,7 @@ public class TimeScr : MonoBehaviour
             }
 
             if (month != previousMonth)
-            {
                 OnNewMonth?.Invoke();
-            }
 
             timeCounter = 1;
         }

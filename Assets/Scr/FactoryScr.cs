@@ -3,12 +3,7 @@ using UnityEngine;
 
 public class FactoryScr : MonoBehaviour
 {
-    [SerializeReference, TypeSelector(typeof(IProduct))]
-    public List<IProduct> storageProduct = new List<IProduct>();
-    public List<int> storage;
-    [SerializeReference, TypeSelector(typeof(IBuilding))]
-    public List<IBuilding> buildings = new List<IBuilding>();
-
+    public Storage storage = new Storage();
     public List<ZoneClass> zones = new List<ZoneClass>();
 
     [SerializeField] private TimeScr timeScr;
@@ -31,19 +26,14 @@ public class FactoryScr : MonoBehaviour
         }
     }
 
-    public ZoneClass GetZoneForCell(CellScr cell)
+    public bool IsCellInAnyZone(CellScr cell)
     {
         foreach (ZoneClass zone in zones)
         {
             if (zone.cells.Contains(cell))
-                return zone;
+                return true;
         }
-        return null;
-    }
-
-    public bool IsCellInAnyZone(CellScr cell)
-    {
-        return GetZoneForCell(cell) != null;
+        return false;
     }
 
     public void RegisterZone(ZoneClass zone)
@@ -52,109 +42,33 @@ public class FactoryScr : MonoBehaviour
 
         zones.Add(zone);
         Debug.Log($"Зону типу {zone.type} з {zone.cells.Count} клітинок додано до FactoryScr.");
-
-        if (zone.type == ZoneType.Workshop)
-        {
-            foreach (CellScr cell in zone.cells)
-            {
-                if (cell.buld is WorkshopClass workshop)
-                    AutoSetupWorkshop(workshop);
-            }
-        }
     }
 
-    public void AutoSetupWorkshop(WorkshopClass workshop)
+    private int CalculateCapacity()
     {
-        if (workshop.demand != null && workshop.demand.product != null) return;
+        int capacity = storage.baseCapacity;
 
-        workshop.need = new ManufacturingClass
+        foreach (ZoneClass zone in zones)
         {
-            product = new RawClass { resourceType = ResourceType.Fabrics, quality = 1 },
-            manufacturing = 0
-        };
+            if (zone.type == ZoneType.Warehouse)
+                capacity += zone.capacityBonus;
+        }
 
-        workshop.demand = new ManufacturingClass
-        {
-            product = new ClothingClass { clothingType = ClothingType.Casual, complexity = 3, quality = 1 },
-            manufacturing = 0
-        };
-
-        Debug.Log("Майстерню автоматично налаштовано на виробництво.");
+        return capacity;
     }
 
     private void ProcessProduction()
     {
+        int capacity = CalculateCapacity();
+
         foreach (ZoneClass zone in zones)
         {
-            if (zone.type != ZoneType.Workshop) continue;
-
-            foreach (CellScr cell in zone.cells)
-            {
-                if (cell.buld is WorkshopClass workshop)
-                    workshop.ProcessDay(zone, storageProduct);
-            }
+            zone.ProcessDay(storage, capacity);
         }
     }
 
     private void LogStorageSummary()
     {
-        if (storageProduct.Count == 0)
-        {
-            Debug.Log("Склад: порожньо.");
-            return;
-        }
-
-        Dictionary<string, int> counts = new Dictionary<string, int>();
-
-        foreach (IProduct product in storageProduct)
-        {
-            string label = product.Describe();
-            counts.TryGetValue(label, out int current);
-            counts[label] = current + 1;
-        }
-
-        string summary = $"Склад ({storageProduct.Count} товар(ів)):";
-        foreach (var pair in counts)
-        {
-            summary += $"\n— {pair.Key}: {pair.Value}";
-        }
-
-        Debug.Log(summary);
-    }
-}
-
-[System.Serializable]
-public class ZoneClass
-{
-    public ZoneType type;
-    public List<CellScr> cells = new List<CellScr>();
-
-    [SerializeReference, TypeSelector(typeof(IProduct))]
-    public List<IProduct> materials = new List<IProduct>();
-
-    public bool TryAddMaterial(IProduct product)
-    {
-        if (!IsAllowedMaterial(product))
-        {
-            Debug.Log($"Матеріал {product.GetType().Name} не підходить для зони типу {type}.");
-            return false;
-        }
-
-        materials.Add(product);
-        Debug.Log($"Матеріал {product.GetType().Name} додано до зони {type}.");
-        return true;
-    }
-
-    private bool IsAllowedMaterial(IProduct product)
-    {
-        switch (type)
-        {
-            case ZoneType.Workshop:
-                return product is RawClass;
-            case ZoneType.Warehouse:
-                return product is ClothingClass;
-            default:
-                return false;
-        }
+        storage.LogSummary(CalculateCapacity());
     }
 }

@@ -1,13 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-
-public enum InteractionMode
-{
-    None,
-    PlacingBuilding,
-    CreatingZone
-}
 
 public class CameraScr : MonoBehaviour
 {
@@ -15,10 +7,9 @@ public class CameraScr : MonoBehaviour
     [SerializeField] private MapScr map;
     [SerializeField] private FactoryScr factory;
 
-    private BuildingType selectedBuildingType = BuildingType.None;
-    private InteractionMode currentMode = InteractionMode.None;
     private ZoneType pendingZoneType = ZoneType.None;
     private CellScr zoneStartCell;
+    private bool isCreatingZone;
 
     public float moveSpeed = 5f;
     public float zoomSpeed = 5f;
@@ -35,61 +26,18 @@ public class CameraScr : MonoBehaviour
         HandleMovement();
         HandleZoom();
 
-        if (Input.GetMouseButtonDown(0))
+        if (isCreatingZone && Input.GetMouseButtonDown(0))
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 CellScr tile = hit.collider.GetComponent<CellScr>();
-                if (tile == null) return;
-
-                switch (currentMode)
-                {
-                    case InteractionMode.PlacingBuilding:
-                        if (selectedBuildingType != BuildingType.None)
-                        {
-                            bool wasEmpty = tile.IsEmpty;
-                            IBuilding newBuilding = CreateBuilding(selectedBuildingType);
-                            tile.SelectBuld(newBuilding);
-
-                            if (wasEmpty && newBuilding is WorkshopClass workshop)
-                            {
-                                ZoneClass zone = factory.GetZoneForCell(tile);
-                                if (zone != null && zone.type == ZoneType.Workshop)
-                                    factory.AutoSetupWorkshop(workshop);
-                            }
-                        }
-                        break;
-
-                    case InteractionMode.CreatingZone:
-                        HandleZoneClick(tile);
-                        break;
-                }
+                if (tile != null)
+                    HandleZoneClick(tile);
             }
         }
     }
-
-    // --- Розміщення будівель ---
-
-    public void SetSelectedBuld(int buildingId)
-    {
-        selectedBuildingType = (BuildingType)buildingId;
-        currentMode = selectedBuildingType == BuildingType.None ? InteractionMode.None : InteractionMode.PlacingBuilding;
-    }
-
-    private IBuilding CreateBuilding(BuildingType type)
-    {
-        switch (type)
-        {
-            case BuildingType.Workshopm: return new WorkshopClass();
-            case BuildingType.Composition: return new WarehouseClass();
-            case BuildingType.Development: return new DevelopmentClass();
-            default: return null;
-        }
-    }
-
-    // --- Створення зон ---
 
     public void StartZoneCreation(int specialization)
     {
@@ -101,14 +49,14 @@ public class CameraScr : MonoBehaviour
             return;
         }
 
-        currentMode = InteractionMode.CreatingZone;
+        isCreatingZone = true;
         zoneStartCell = null;
         Debug.Log($"Режим створення зони '{pendingZoneType}' увімкнено. Вибери точку A.");
     }
 
     public void CancelZoneCreation()
     {
-        currentMode = InteractionMode.None;
+        isCreatingZone = false;
         zoneStartCell = null;
         pendingZoneType = ZoneType.None;
     }
@@ -126,9 +74,9 @@ public class CameraScr : MonoBehaviour
 
         if (IsOverlappingExistingZone(candidateCells))
         {
-            Debug.Log("Ця зона перетинається з уже існуючою. Будівництво скасовано.");
+            Debug.Log("Ця зона перетинається з уже існуючою. Створення скасовано.");
             zoneStartCell = null;
-            currentMode = InteractionMode.None;
+            isCreatingZone = false;
             pendingZoneType = ZoneType.None;
             return;
         }
@@ -143,7 +91,7 @@ public class CameraScr : MonoBehaviour
         HighlightZone(newZone);
 
         zoneStartCell = null;
-        currentMode = InteractionMode.None;
+        isCreatingZone = false;
         pendingZoneType = ZoneType.None;
     }
 
