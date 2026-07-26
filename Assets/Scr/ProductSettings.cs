@@ -10,16 +10,17 @@ public enum ClothingType
 
 public enum ResourceType
 {
-    None, Machines, Fabrics
+    None, Machines, Cotton, Wool
 }
 
 [System.Serializable]
 public class ClothingSettings : IProductSettings
 {
     public ClothingType clothingType;
+    public ResourceType material;
     public int design;
 
-    public string Describe() => $"{clothingType} (одяг)";
+    public string Describe() => $"{clothingType} (одяг, {material})";
 }
 
 [System.Serializable]

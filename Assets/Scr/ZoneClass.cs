@@ -7,12 +7,10 @@ public enum ZoneType
 }
 
 [System.Serializable]
-public class ZoneClass
+public class Recipe
 {
-    public ZoneType type;
-    public List<CellScr> cells = new List<CellScr>();
+    public string recipeName = "Новий рецепт";
 
-    [Header("Майстерня (лише для типу Workshop)")]
     [SerializeReference, TypeSelector(typeof(IProductSettings))]
     public IProductSettings inputSettings;
     public int inputQuality;
@@ -23,6 +21,18 @@ public class ZoneClass
     public int outputQuality = 1;
     public int outputAmount = 1;
     public int complexity = 3;
+}
+
+[System.Serializable]
+public class ZoneClass
+{
+    public ZoneType type;
+    public List<CellScr> cells = new List<CellScr>();
+
+    [Header("Майстерня (лише для типу Workshop)")]
+    public List<Recipe> recipes = new List<Recipe>();
+
+    [HideInInspector] public int activeRecipeIndex = -1;
     [HideInInspector] public int progress;
 
     [Header("Склад (лише для типу Warehouse)")]
@@ -30,33 +40,61 @@ public class ZoneClass
 
     public void ProcessDay(Storage storage, int capacity)
     {
-        if (type != ZoneType.Workshop || outputSettings == null) return;
+        if (type != ZoneType.Workshop || recipes.Count == 0) return;
 
-        if (progress < complexity)
+        if (activeRecipeIndex < 0)
         {
-            progress++;
-            Debug.Log($"[Майстерня] Виготовлення: {progress}/{complexity}.");
-            if (progress < complexity) return;
+            activeRecipeIndex = FindReadyRecipe(storage);
+
+            if (activeRecipeIndex < 0)
+            {
+                Debug.Log("[Майстерня] Немає сировини для жодного з рецептів.");
+                return;
+            }
+
+            progress = 0;
         }
 
-        if (inputSettings != null && !storage.HasEnough(inputSettings, inputQuality, inputAmount))
+        Recipe recipe = recipes[activeRecipeIndex];
+
+        progress++;
+        Debug.Log($"[Майстерня] {recipe.recipeName}: {progress}/{recipe.complexity}.");
+
+        if (progress < recipe.complexity) return;
+
+        if (recipe.inputSettings != null && !storage.HasEnough(recipe.inputSettings, recipe.inputQuality, recipe.inputAmount))
         {
-            Debug.Log($"[Майстерня] Чекаємо на сировину: {inputSettings.Describe()} x{inputAmount}.");
+            Debug.Log($"[Майстерня] Сировина закінчилась під час виробництва ({recipe.inputSettings.Describe()}). Чекаємо.");
             return;
         }
 
-        if (storage.TotalCount() + outputAmount > capacity)
+        if (storage.TotalCount() + recipe.outputAmount > capacity)
         {
             Debug.Log("[Майстерня] Склад повний — готовий товар чекає місця.");
             return;
         }
 
-        if (inputSettings != null)
-            storage.TryRemove(inputSettings, inputQuality, inputAmount);
+        if (recipe.inputSettings != null)
+            storage.TryRemove(recipe.inputSettings, recipe.inputQuality, recipe.inputAmount);
 
-        storage.TryAdd(outputSettings, outputQuality, outputAmount, capacity);
-        Debug.Log($"[Майстерня] Вироблено: {outputSettings.Describe()} x{outputAmount}.");
+        storage.TryAdd(recipe.outputSettings, recipe.outputQuality, recipe.outputAmount, capacity);
+        Debug.Log($"[Майстерня] Вироблено: {recipe.outputSettings.Describe()} x{recipe.outputAmount}.");
 
         progress = 0;
+        activeRecipeIndex = -1;
+    }
+
+    private int FindReadyRecipe(Storage storage)
+    {
+        for (int i = 0; i < recipes.Count; i++)
+        {
+            Recipe recipe = recipes[i];
+            if (recipe.outputSettings == null) continue;
+
+            if (recipe.inputSettings == null || storage.HasEnough(recipe.inputSettings, recipe.inputQuality, recipe.inputAmount))
+                return i;
+        }
+
+        return -1;
     }
 }

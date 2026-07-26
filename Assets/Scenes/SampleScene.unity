@@ -420,16 +420,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   storage:
     baseCapacity: 20
-    products:
-    - rid: -2
-    - rid: -2
+    products: []
   zones: []
   timeScr: {fileID: 1905986936}
   references:
     version: 2
-    RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
+    RefIds: []
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
