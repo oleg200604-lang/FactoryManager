@@ -36,7 +36,11 @@ public class ZoneClass
     [HideInInspector] public int progress;
 
     [Header("Склад (лише для типу Warehouse)")]
-    public int capacityBonus = 10;
+    [Tooltip("Бонус місткості = кількість клітинок зони × Y")]
+    public int capacityMultiplier = 5;
+
+    public int ProductionPower => Mathf.Max(1, cells.Count / 2);
+    public int CapacityBonus => cells.Count * capacityMultiplier;
 
     public void ProcessDay(Storage storage, int capacity)
     {
@@ -57,8 +61,8 @@ public class ZoneClass
 
         Recipe recipe = recipes[activeRecipeIndex];
 
-        progress++;
-        Debug.Log($"[Майстерня] {recipe.recipeName}: {progress}/{recipe.complexity}.");
+        progress += ProductionPower;
+        Debug.Log($"[Майстерня] {recipe.recipeName}: {progress}/{recipe.complexity} (сила {ProductionPower}).");
 
         if (progress < recipe.complexity) return;
 

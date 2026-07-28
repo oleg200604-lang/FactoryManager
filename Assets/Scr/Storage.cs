@@ -4,6 +4,32 @@ using UnityEngine;
 [System.Serializable]
 public class Storage
 {
+    public void MergeDuplicates()
+    {
+        for (int i = products.Count - 1; i >= 0; i--)
+        {
+            ProductStock current = products[i];
+
+            if (current.settings == null || current.amount <= 0)
+            {
+                if (current.amount <= 0) products.RemoveAt(i);
+                continue;
+            }
+
+            for (int j = i - 1; j >= 0; j--)
+            {
+                ProductStock other = products[j];
+                if (other.settings == null) continue;
+
+                if (other.quality == current.quality && other.settings.Describe() == current.settings.Describe())
+                {
+                    other.amount += current.amount;
+                    products.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+    }
     public int baseCapacity = 20;
 
     [SerializeReference]

@@ -70,6 +70,15 @@ public class CameraScr : MonoBehaviour
             return;
         }
 
+        Vector2Int size = GetZoneSize(zoneStartCell, clickedCell);
+        Vector2Int minSize = GetMinimumZoneSize(pendingZoneType);
+
+        if (size.x < minSize.x || size.y < minSize.y)
+        {
+            Debug.Log($"Зона замала: {size.x}x{size.y}, потрібно щонайменше {minSize.x}x{minSize.y}. Вибери іншу точку B.");
+            return;
+        }
+
         List<CellScr> candidateCells = GetCellsBetween(zoneStartCell, clickedCell);
 
         if (IsOverlappingExistingZone(candidateCells))
@@ -93,6 +102,24 @@ public class CameraScr : MonoBehaviour
         zoneStartCell = null;
         isCreatingZone = false;
         pendingZoneType = ZoneType.None;
+    }
+
+    private Vector2Int GetZoneSize(CellScr pointA, CellScr pointB)
+    {
+        int width = Mathf.Abs(pointA.gridPosition.x - pointB.gridPosition.x) + 1;
+        int height = Mathf.Abs(pointA.gridPosition.y - pointB.gridPosition.y) + 1;
+        return new Vector2Int(width, height);
+    }
+
+    private Vector2Int GetMinimumZoneSize(ZoneType type)
+    {
+        switch (type)
+        {
+            case ZoneType.Workshop: return new Vector2Int(2, 2);
+            case ZoneType.Warehouse: return new Vector2Int(3, 3);
+            case ZoneType.Development: return new Vector2Int(2, 2);
+            default: return new Vector2Int(1, 1);
+        }
     }
 
     private List<CellScr> GetCellsBetween(CellScr pointA, CellScr pointB)

@@ -26,6 +26,11 @@ public class FactoryScr : MonoBehaviour
         }
     }
 
+    private void OnValidate()
+    {
+        storage?.MergeDuplicates();
+    }
+
     public bool IsCellInAnyZone(CellScr cell)
     {
         foreach (ZoneClass zone in zones)
@@ -51,7 +56,7 @@ public class FactoryScr : MonoBehaviour
         foreach (ZoneClass zone in zones)
         {
             if (zone.type == ZoneType.Warehouse)
-                capacity += zone.capacityBonus;
+                capacity += zone.CapacityBonus;
         }
 
         return capacity;
@@ -59,6 +64,8 @@ public class FactoryScr : MonoBehaviour
 
     private void ProcessProduction()
     {
+        storage.MergeDuplicates();
+
         int capacity = CalculateCapacity();
 
         foreach (ZoneClass zone in zones)
